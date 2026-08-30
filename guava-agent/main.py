@@ -31,7 +31,6 @@ FIELD_KEYS = (
 ALLOWED_ORIGINS = {
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://afterpulse-care-loop.anupria.chatgpt.site",
 }
 
 state_lock = threading.Lock()
@@ -105,6 +104,7 @@ def create_agent() -> guava.Agent:
     @agent.on_call_start
     def on_call_start(call: guava.Call) -> None:
         update_state(status="in_call", message="Check-in in progress")
+        call.set_voicemail_action(hangup=True)
         call.set_task(
             "post_event_checkin",
             objective=(
@@ -173,6 +173,13 @@ def create_agent() -> guava.Agent:
     def on_session_end(call: guava.Call, event: BotSessionEnded) -> None:
         record = build_event(call, event.termination_reason)
         save_event(record)
+        if record["completeness"]["answered"] == 0:
+            update_state(
+                status="failed",
+                message="No answers captured — retry the live call",
+                latest_event=None,
+            )
+            return
         update_state(
             status="completed",
             message="Clinician record ready",
@@ -211,7 +218,11 @@ class DemoHandler(BaseHTTPRequestHandler):
         if path == "/call":
             self._start_call()
         elif path == "/reset":
-            update_state(status="idle", message="Ready for wearable replay")
+            update_state(
+                status="idle",
+                message="Ready for wearable replay",
+                latest_event=None,
+            )
             self._json(200, state_snapshot())
         else:
             self._json(404, {"error": "not_found"})
