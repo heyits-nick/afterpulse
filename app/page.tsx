@@ -140,6 +140,22 @@ export default function Home() {
     15,
     60,
   );
+  const hrAreaPath = areaPath(
+    visibleReplay.map((point) => point.hr),
+    65,
+    130,
+  );
+  const hrvAreaPath = areaPath(
+    visibleReplay.map((point) => point.hrv),
+    15,
+    60,
+  );
+  const heuristicState =
+    phase === 'idle'
+      ? 'Ready to evaluate'
+      : phase === 'replaying'
+        ? 'Evaluating recovery'
+        : 'Recovery sustained';
   const statusMessage =
     phase === 'replaying'
       ? 'Analyzing the recovery trend'
@@ -257,11 +273,11 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/70 bg-card/80 backdrop-blur">
+    <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_12%_0%,rgba(16,185,129,0.12),transparent_28%),radial-gradient(circle_at_88%_16%,rgba(20,184,166,0.08),transparent_24%)] text-foreground">
+      <header className="sticky top-0 z-40 border-b border-white/70 bg-card/70 shadow-[0_1px_0_rgba(15,76,61,0.04)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <span className="grid size-10 place-items-center rounded-xl bg-linear-to-br from-emerald-600 to-emerald-800 text-primary-foreground shadow-[0_10px_28px_-12px_rgba(5,150,105,0.8)] ring-1 ring-white/30">
               <HeartPulse className="size-5" />
             </span>
             <div>
@@ -309,6 +325,17 @@ export default function Home() {
             <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
               From physiological signal to clinician context.
             </h1>
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-emerald-950/70">
+              <span className="rounded-full border border-white/80 bg-white/65 px-2.5 py-1 shadow-sm backdrop-blur">
+                12-minute signal replay
+              </span>
+              <span className="rounded-full border border-white/80 bg-white/65 px-2.5 py-1 shadow-sm backdrop-blur">
+                ~60-second voice check-in
+              </span>
+              <span className="rounded-full border border-white/80 bg-white/65 px-2.5 py-1 shadow-sm backdrop-blur">
+                6 structured fields
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <p
@@ -332,7 +359,7 @@ export default function Home() {
         <StageRail phase={phase} />
 
         <div className="mt-5 grid gap-5 lg:grid-cols-[1.08fr_0.92fr]">
-          <Card className="border border-border/80 shadow-[0_18px_60px_-40px_rgba(11,67,54,0.5)] ring-0">
+          <Card className="relative overflow-hidden border border-white/80 bg-card/80 shadow-[0_24px_80px_-48px_rgba(11,67,54,0.65)] ring-1 ring-emerald-950/[0.03] backdrop-blur-xl transition-all duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-emerald-300/70 before:to-transparent hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-46px_rgba(11,67,54,0.75)]">
             <CardHeader className="border-b border-border/70 pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Watch className="size-5 text-emerald-700" />
@@ -369,7 +396,7 @@ export default function Home() {
                 />
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-[#f7faf8] p-4">
+              <div className="rounded-2xl border border-white/80 bg-linear-to-br from-[#f8fbf9] via-white to-emerald-50/50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <div className="mb-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">Physiological trend</p>
@@ -392,6 +419,24 @@ export default function Home() {
                   aria-label="Simulated heart rate and heart rate variability chart"
                   className="h-[220px] w-full overflow-visible"
                 >
+                  <defs>
+                    <linearGradient id="hr-area" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="0%"
+                        stopColor="#e66a58"
+                        stopOpacity="0.18"
+                      />
+                      <stop offset="100%" stopColor="#e66a58" stopOpacity="0" />
+                    </linearGradient>
+                    <linearGradient id="hrv-area" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="0%"
+                        stopColor="#14866d"
+                        stopOpacity="0.16"
+                      />
+                      <stop offset="100%" stopColor="#14866d" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
                   <rect
                     x="205"
                     y="10"
@@ -412,6 +457,8 @@ export default function Home() {
                       strokeDasharray="4 6"
                     />
                   ))}
+                  <path d={hrAreaPath} fill="url(#hr-area)" />
+                  <path d={hrvAreaPath} fill="url(#hrv-area)" />
                   <path
                     d={hrPath}
                     fill="none"
@@ -419,7 +466,7 @@ export default function Home() {
                     strokeWidth="4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="transition-all duration-500"
+                    className="drop-shadow-[0_3px_5px_rgba(230,106,88,0.18)] transition-all duration-500"
                   />
                   <path
                     d={hrvPath}
@@ -428,7 +475,15 @@ export default function Home() {
                     strokeWidth="4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="transition-all duration-500"
+                    className="drop-shadow-[0_3px_5px_rgba(20,134,109,0.18)] transition-all duration-500"
+                  />
+                  <circle
+                    cx={lastX(visibleReplay.length)}
+                    cy={valueY(reading.hr, 65, 130)}
+                    r="11"
+                    fill="#e66a58"
+                    opacity="0.12"
+                    className="animate-pulse"
                   />
                   <circle
                     cx={lastX(visibleReplay.length)}
@@ -437,6 +492,14 @@ export default function Home() {
                     fill="#e66a58"
                     stroke="white"
                     strokeWidth="3"
+                  />
+                  <circle
+                    cx={lastX(visibleReplay.length)}
+                    cy={valueY(reading.hrv, 15, 60)}
+                    r="11"
+                    fill="#14866d"
+                    opacity="0.12"
+                    className="animate-pulse"
                   />
                   <circle
                     cx={lastX(visibleReplay.length)}
@@ -462,6 +525,25 @@ export default function Home() {
                     now
                   </text>
                 </svg>
+              </div>
+
+              <div className="flex flex-col justify-between gap-3 rounded-xl border border-emerald-100/90 bg-white/70 p-3.5 shadow-sm backdrop-blur sm:flex-row sm:items-center">
+                <div>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-emerald-800">
+                    <ShieldCheck className="size-3.5" /> Deterministic recovery
+                    heuristic
+                  </p>
+                  <p className="mt-1 text-sm text-foreground/75">
+                    Peak HR +72% · HRV −65% · low motion · outreach only after
+                    recovery
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-800"
+                >
+                  {heuristicState}
+                </Badge>
               </div>
 
               <PatientAction
@@ -517,7 +599,7 @@ function PatientAction({
         </div>
         <Button
           size="lg"
-          className="h-11 px-4"
+          className="h-12 border border-emerald-500/50 bg-linear-to-r from-emerald-700 via-emerald-600 to-teal-600 px-5 text-white shadow-[0_12px_30px_-12px_rgba(5,150,105,0.85),inset_0_1px_0_rgba(255,255,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:from-emerald-600 hover:to-teal-500 active:translate-y-0 active:scale-[0.98]"
           onClick={bridgeOnline ? onCall : onPreview}
         >
           {bridgeOnline ? (
@@ -556,6 +638,22 @@ function PatientAction({
         <div>
           <p className="font-medium">{copy[0]}</p>
           <p className="mt-1 text-sm text-emerald-100/70">{copy[1]}</p>
+        </div>
+        <div
+          className="ml-auto hidden h-9 items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/5 px-3 sm:flex"
+          aria-hidden="true"
+        >
+          {Array.from({ length: 14 }, (_, index) => (
+            <i
+              key={index}
+              className="w-0.5 animate-pulse rounded-full bg-emerald-300"
+              style={{
+                height: `${8 + ((index * 7) % 22)}px`,
+                animationDelay: `${index * 70}ms`,
+                animationDuration: `${720 + (index % 3) * 160}ms`,
+              }}
+            />
+          ))}
         </div>
       </div>
     );
@@ -611,7 +709,7 @@ function PatientAction({
       </div>
       <Button
         size="lg"
-        className="h-11 bg-white px-4 text-[#112a24] hover:bg-emerald-50"
+        className="h-12 border border-emerald-200 bg-linear-to-br from-white via-emerald-50 to-emerald-100 px-5 text-[#112a24] shadow-[0_12px_30px_-15px_rgba(52,211,153,0.75),inset_0_1px_0_white] transition-all duration-300 hover:-translate-y-0.5 hover:from-white hover:to-emerald-50 active:translate-y-0 active:scale-[0.98]"
         onClick={onReplay}
         disabled={phase === 'replaying'}
       >
@@ -636,7 +734,7 @@ function ClinicianCard({
   const isSample = record?.id === 'sample-event';
 
   return (
-    <Card className="border border-border/80 shadow-[0_18px_60px_-40px_rgba(11,67,54,0.5)] ring-0">
+    <Card className="relative overflow-hidden border border-white/80 bg-card/80 shadow-[0_24px_80px_-48px_rgba(11,67,54,0.65)] ring-1 ring-emerald-950/[0.03] backdrop-blur-xl transition-all duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-emerald-300/70 before:to-transparent hover:-translate-y-0.5 hover:shadow-[0_28px_90px_-46px_rgba(11,67,54,0.75)]">
       <CardHeader className="border-b border-border/70 pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <ShieldCheck className="size-5 text-emerald-700" /> Clinician review
@@ -658,6 +756,12 @@ function ClinicianCard({
                   : ''
             }
           >
+            {record && !isSample && (
+              <span className="relative mr-1 flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-50" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-600" />
+              </span>
+            )}
             {record
               ? isSample
                 ? 'Demo sample'
@@ -691,7 +795,7 @@ function ClinicianCard({
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="animate-in space-y-4 fade-in slide-in-from-bottom-2 duration-500">
             <div className="flex items-start justify-between gap-4 rounded-2xl bg-[#112a24] p-5 text-white">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.13em] text-emerald-200">
@@ -777,7 +881,7 @@ function ClinicianCard({
                 Not diagnostic
               </p>
               <Button variant="outline" size="sm" onClick={onDownload}>
-                <Download data-icon="inline-start" /> EHR-ready JSON
+                <Download data-icon="inline-start" /> Export structured JSON
               </Button>
             </div>
           </div>
@@ -806,14 +910,18 @@ function StageRail({ phase }: { phase: DemoPhase }) {
     ['Clinician context', Clock3],
   ] as const;
   return (
-    <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border/70 bg-card p-2 sm:grid-cols-4">
+    <div className="relative grid grid-cols-2 gap-2 overflow-hidden rounded-2xl border border-white/80 bg-card/70 p-2 shadow-[0_16px_50px_-40px_rgba(11,67,54,0.6)] backdrop-blur-xl sm:grid-cols-4">
+      <div
+        aria-hidden="true"
+        className="absolute top-1/2 right-[12%] left-[12%] hidden h-px -translate-y-1/2 bg-linear-to-r from-emerald-200 via-emerald-300/70 to-border sm:block"
+      />
       {stages.map(([label, Icon], index) => (
         <div
           key={label}
-          className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium transition-colors ${index <= active ? 'bg-emerald-50 text-emerald-900' : 'text-muted-foreground'}`}
+          className={`relative z-10 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium transition-all duration-300 ${index < active ? 'bg-emerald-50/95 text-emerald-900' : index === active ? 'bg-[#112a24] text-white shadow-[0_10px_25px_-14px_rgba(11,67,54,0.9)]' : 'bg-card/70 text-muted-foreground'}`}
         >
           <span
-            className={`grid size-6 place-items-center rounded-full ${index < active ? 'bg-emerald-700 text-white' : index === active ? 'border border-emerald-300 bg-white text-emerald-700' : 'bg-muted'}`}
+            className={`grid size-6 place-items-center rounded-full transition-all ${index < active ? 'bg-emerald-700 text-white' : index === active ? 'bg-white/15 text-emerald-200 ring-1 ring-emerald-300/40' : 'bg-muted'}`}
           >
             {index < active ? (
               <Check className="size-3.5" />
@@ -935,6 +1043,10 @@ function linePath(values: number[], min: number, max: number) {
         `${index === 0 ? 'M' : 'L'} ${lastX(index + 1).toFixed(1)} ${valueY(value, min, max).toFixed(1)}`,
     )
     .join(' ');
+}
+
+function areaPath(values: number[], min: number, max: number) {
+  return `${linePath(values, min, max)} L ${lastX(values.length).toFixed(1)} 204 L 12 204 Z`;
 }
 
 function lastX(pointCount: number) {
