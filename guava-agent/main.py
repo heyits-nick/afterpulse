@@ -28,7 +28,11 @@ FIELD_KEYS = (
     "what_helped",
     "follow_up_requested",
 )
-ALLOWED_ORIGINS = {"http://localhost:3000", "http://127.0.0.1:3000"}
+ALLOWED_ORIGINS = {
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://afterpulse-care-loop.anupria.chatgpt.site",
+}
 
 state_lock = threading.Lock()
 state: dict[str, Any] = {
